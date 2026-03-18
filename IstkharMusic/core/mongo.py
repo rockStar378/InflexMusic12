@@ -1,14 +1,17 @@
-from motor.motor_asyncio import AsyncIOMotorClient
+FROM nikolaik/python-nodejs:python3.11-nodejs19
 
-from config import MONGO_DB_URI
+RUN rm -f /etc/apt/sources.list.d/yarn.list && \
+    sed -i 's|http://deb.debian.org/debian|http://archive.debian.org/debian|g' /etc/apt/sources.list && \
+    sed -i '/security.debian.org/d' /etc/apt/sources.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends ffmpeg aria2 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-from ..logging import LOGGER
+COPY . /app/
+WORKDIR /app/
 
-LOGGER(__name__).info("» ᴄᴏɴɴᴇᴄᴛɪɴɢ ᴛᴏ ʏᴏᴜʀ ᴍᴏɴɢᴏ ᴅᴀᴛᴀʙᴀsᴇ...")
-try:
-    _mongo_async_ = AsyncIOMotorClient(MONGO_DB_URI)
-    mongodb = _mongo_async_.Anon
-    LOGGER(__name__).info("» ᴄᴏɴɴᴇᴄᴛᴇᴅ ᴛᴏ ʏᴏᴜʀ ᴍᴏɴɢᴏ ᴅᴀᴛᴀʙᴀsᴇ.")
-except:
-    LOGGER(__name__).error("» ꜰᴀɪʟᴇᴅ ᴛᴏ ᴄᴏɴɴᴇᴄᴛ ᴛᴏ ʏᴏᴜʀ ᴍᴏɴɢᴏ ᴅᴀᴛᴀʙᴀsᴇ.")
-    exit()
+RUN python -m pip install --no-cache-dir --upgrade pip
+RUN pip3 install --no-cache-dir --upgrade -r requirements.txt
+
+CMD bash start
