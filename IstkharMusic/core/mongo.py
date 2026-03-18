@@ -1,17 +1,14 @@
-FROM nikolaik/python-nodejs:python3.11-nodejs19
+from motor.motor_asyncio import AsyncIOMotorClient
 
-RUN rm -f /etc/apt/sources.list.d/yarn.list && \
-    sed -i 's|http://deb.debian.org/debian|http://archive.debian.org/debian|g' /etc/apt/sources.list && \
-    sed -i '/security.debian.org/d' /etc/apt/sources.list && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends ffmpeg aria2 && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+from config import MONGO_DB_URI
 
-COPY . /app/
-WORKDIR /app/
+from ..logging import LOGGER
 
-RUN python -m pip install --no-cache-dir --upgrade pip
-RUN pip3 install --no-cache-dir --upgrade -r requirements.txt
-
-CMD bash start
+LOGGER(__name__).info("Connecting to your Mongo Database...")
+try:
+    _mongo_async_ = AsyncIOMotorClient(MONGO_DB_URI)
+    mongodb = _mongo_async_.Yukki
+    LOGGER(__name__).info("Connected to your Mongo Database.")
+except:
+    LOGGER(__name__).error("Failed to connect to your Mongo Database.")
+    exit()
